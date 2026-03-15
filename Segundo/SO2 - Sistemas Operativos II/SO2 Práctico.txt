@@ -1,0 +1,1393 @@
+SO2 Práctico:
+
+-Práctica 1 : Teoría
+
+1. Elección de un sistema operativo (antes de instalar).
+
+1.1 Requisitos de hardware
+
+CPU: arquitectura (32/64 bits), compatibilidades e instrucciones. Más potencia = mejor respuesta.
+
+Núcleos: más núcleos = mejor multitarea.
+
+RAM: si falta RAM, se usa disco como memoria virtual y el rendimiento cae mucho.
+
+Disco: espacio y velocidad (SSD mejora arranque y carga).
+
+Compatibilidad: drivers y soporte para gráfica, red, RAID, periféricos.
+
+1.2 Características del equipo
+
+Identificar discos y particiones existentes.
+
+Ver si hay SO previos y si habrá arranque dual.
+
+Planificar particiones necesarias (en Linux es típico separar /, /home y swap).
+
+1.3 Gestor de arranque
+
+Permite elegir qué SO iniciar cuando hay varios.
+
+En Linux, lo habitual es GRUB, que detecta otros sistemas (ej. Windows).
+
+1.4 Licencias
+
+Ver si el SO y el software requieren licencias (libre, comercial, académica).
+
+Coste y número de equipos puede ser decisivo.
+
+1.5 Copias de seguridad
+
+Antes de tocar particiones o instalar, hacer backup para evitar pérdidas.
+
+1.6 Software a instalar
+
+El software condiciona el SO y los recursos necesarios (versiones, requisitos).
+
+1.7 Separar sistema y datos en particiones
+Ventajas:
+
+Facilita backups.
+
+Permite reinstalar el SO sin perder datos.
+
+Mejor organización/mantenimiento.
+Inconveniente:
+
+Hay que decidir bien el tamaño de cada partición.
+
+1.8 Métodos de instalación soportados
+
+Desatendida: automatizada con ficheros de configuración.
+
+Por red: instalación desde servidor vía red.
+
+Clonado: copiar imagen a otros equipos (hardware similar).
+
+Live: probar sin instalar en disco.
+
+2. Virtualización del sistema operativo
+
+2.1 Qué es
+
+Permite ejecutar varios sistemas operativos a la vez en un mismo equipo.
+
+Se usan máquinas virtuales (VM) que emulan un ordenador completo.
+
+Las gestiona un software de virtualización llamado hipervisor.
+
+2.2 Host y Guest
+
+Host (anfitrión): el sistema operativo del equipo físico.
+
+Guest (invitado): el sistema operativo dentro de la VM.
+
+Un host puede tener varios guests.
+
+2.3 Requisitos hardware para virtualizar
+
+CPU con extensiones de virtualización: Intel VT-x / AMD-V.
+
+RAM suficiente para repartir entre host e invitados.
+
+Disco suficiente.
+
+Soporte de virtualización en CPU/placa mejora rendimiento.
+
+3. Tipos de virtualización (por cómo se integra el hipervisor)
+
+3.1 Bare-Metal (Tipo 1)
+
+El hipervisor se instala directamente sobre el hardware (sin SO anfitrión).
+
+Rendimiento cercano al nativo.
+
+Más orientado a servidores/producción y suele aportar más seguridad.
+Ejemplos: VMware ESXi, Xen, Citrix XenServer, Hyper-V Server, Oracle VM Server.
+
+3.2 Hosted (Tipo 2)
+
+El hipervisor es una aplicación sobre un SO anfitrión.
+
+Más fácil para casa/educación.
+
+Menor rendimiento que tipo 1 porque el host gestiona los recursos.
+Ejemplos: VirtualBox, VMware Workstation, Virtual PC.
+
+4. Contenerización (relacionada pero no igual que VM)
+
+Aísla aplicaciones y dependencias en entornos ligeros (contenedores).
+
+No necesita un SO invitado completo → menos consumo de CPU/RAM y despliegue rápido.
+
+Menor aislamiento que una VM, pero muy eficiente para muchas apps.
+Ejemplo típico: Docker.
+
+
+
+-Práctica 2 : Teoría
+
+1. Linux es multiusuario: por qué importa:
+
+Linux permite que trabajen varios usuarios en el mismo sistema. Para que sea seguro y estable, usa cuentas, permisos y grupos para controlar qué puede hacer cada uno y proteger tanto los datos como el sistema.
+
+2. Tipos de cuentas:
+
+2.1 root (superusuario, UID 0)
+Control total del sistema. En Debian suele estar activa con contraseña; en Ubuntu suele venir deshabilitada y se administra mediante sudo.
+
+2.2 Usuarios normales
+Uso diario. Permisos limitados, normalmente restringidos a su directorio personal y directorios compartidos como /tmp.
+
+2.3 Cuentas de sistema/servicios
+No representan personas, sino servicios (web, correo, demonios…). Se usan para aislar privilegios. No deberían permitir inicio de sesión: contraseña bloqueada y shell de “no login”.
+
+3. Grupos: para qué sirven:
+
+Permiten gestionar permisos de forma colectiva.
+Cada usuario tiene un grupo primario y puede pertenecer a varios grupos secundarios.
+Un grupo puede contener usuarios, pero no otros grupos.
+
+4. Archivos clave de usuarios y grupos
+
+4.1 passwd
+Guarda datos básicos del usuario: nombre, UID, GID, comentario, home, shell. La contraseña no está aquí (aparece una x).
+
+4.2 shadow
+Guarda contraseñas cifradas y políticas. Solo accesible por root. Si la contraseña está bloqueada suele aparecer ! o *.
+
+4.3 group
+Guarda la información de grupos: nombre, GID y lista de usuarios secundarios (separados por comas). El grupo primario no se refleja aquí porque se define en passwd.
+
+4.4 gshadow
+Similar a shadow pero para grupos (políticas, administradores, etc.).
+
+4.5 skel
+Directorio plantilla que se copia al home de los nuevos usuarios (archivos de configuración inicial).
+
+5. Gestión de grupos (comandos):
+
+-Crear grupo: groupadd (o addgroup en Debian).
+
+-Eliminar grupo: groupdel (o delgroup en Debian). No se puede borrar si algún usuario lo tiene como grupo primario.
+
+-Modificar grupo: groupmod (cambiar GID o nombre).
+
+-Grupos típicos para permisos: cdrom, audio, dialout, video, lp, plugdev.
+
+6. Gestión de usuarios (comandos)
+
+6.1 adduser (Debian, interactivo, “hace todo”)
+
+Crea el usuario y su grupo.
+
+Asigna grupo primario.
+
+Crea home.
+
+Copia plantilla inicial.
+
+Asigna shell por defecto (bash).
+
+6.2 useradd (más técnico, configurable)
+
+Permite especificar home, crear directorio, shell, etc.
+
+No asigna contraseña automáticamente → hay que usar passwd.
+
+6.3 borrar y modificar
+
+Borrar usuario: userdel (con -r también borra su home).
+
+Modificar usuario: usermod (cambiar grupo primario, home, shell, comentario, login…).
+
+6.4 pertenencia a grupos
+
+Añadir a grupo secundario: usermod -a -G (o adduser usuario grupo en Debian).
+
+Quitar de grupo: se redefine la lista con usermod -G o se usa deluser usuario grupo.
+
+7. Cambio de usuario: su vs su -
+
+su usuario: cambia usuario sin cargar el entorno completo.
+
+su - usuario: conmutación completa (como un login), carga home/variables/shell.
+
+Volver al usuario anterior: exit.
+
+8. Privilegios con sudo
+
+Permite ejecutar comandos como root usando tu contraseña (si estás autorizado).
+
+Para habilitarlo en Debian: añadir el usuario al grupo sudo.
+
+Hay un período de gracia (no pide contraseña cada vez); se puede invalidar con sudo -k.
+
+Ver permisos: sudo -l.
+
+Ver permisos de otro usuario: sudo -l -U usuario.
+
+Conmutar a root con sudo:
+
+sudo su (mantiene entorno del usuario)
+
+sudo su - (entorno completo de root)
+
+sudo -i (recomendado: shell interactiva de root “limpia”)
+
+9. sudoers y visudo (clave)
+
+La configuración de sudo se define en el archivo sudoers.
+
+Debe editarse con visudo porque bloquea edición simultánea y valida sintaxis para no romper sudo.
+
+
+
+-Práctica 2 : Práctica
+
+1. Visualiza y copia, en un directorio que cuelgue de tu directorio de inicio, el contenido de los siguientes ficheros:
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/gshadow
+
+1. mkdir practica2_ficheros
+   
+   sudo cp /etc/passwd ~/practica2_ficheros/ 
+   sudo cp /etc/shadow ~/practica2_ficheros/ 
+   sudo cp /etc/group ~/practica2_ficheros/ 
+   sudo cp /etc/gshadow ~/practica2_ficheros/
+   ls -l ~/practica2_ficheros: Comprobar que se copió correctamente.
+   
+   cat ~/practica2_ficheros/passwd
+   cat ~/practica2/ficheros/group
+   sudo cat ~/practica2_ficheros/shadow
+   sudo cat ~/practica2_ficheros/gshadow
+
+2.¿En qué se diferencian los dos comandos siguientes?:
+adduser alumno1
+useradd alumno1
+Nota: Antes de probar el segundo comando, no te olvides de borrar el usuario creado previamente junto con toda su información.
+
+2.useradd es el comando estándar de bajo nivel y no interactivo, tienes que especificar opciones manualmente.
+  Ejemplo: sudo useradd -m(crea directorio home) -s /bin/bash(asigna shell) [Nombbre]
+  Y tras esto hay que ponerle una contraseña con sudo passwd [Nombre].
+
+  adduser es de alto nivel y interactivo, basta con hacer suddo adduser [Nombre] y ya te pregunta automáticamente
+  contraseña y datos adicionales.
+
+3. Crea un nuevo grupo con el nombre grupo_so2 y añádele el usuario que se ha creado en el apartado anterior.
+
+3.sudo groupadd grupo_so2
+  sudo usermod(modifica un usuario) -a(añadir sin borrar otros grupos)G(grupos suplementarios)(Importante -aG junto
+  sino puedes borrar el usuario de otros grupos)[NombreGrupo] [Nombre].
+ 
+  groups [Nombre] : Comprobar que se añadió correctamente al grupo creado.
+
+4.Crea un nuevo usuario con el comando useradd donde especifiques además de su login (alumno2), su grupo principal (grupo_so2), su directorio de inicio (alumno2), el comentario (primer usuario general) y el shell predeterminado csh.
+Nota: Comprueba primero si el shell csh está instalado en el equipo y en el caso de que no esté, ejecuta el comando necesario para instalarlo (sudo apt-get install tcsh).
+a) ¿Qué ocurre si eliminas la opción -m?
+b) ¿Que contraseña tiene asignada el usuario alumno2? En cualquier caso, asígnale como contraseña su mismo login.
+
+
+4.Primero comprobamos si csh está insttalado: which csh, sino devuelve una ruta hay que instalarlo: 
+sudo apt -get update(actualiza paquetes locales) y luego sudo apt -get install tcsh, una vez instalado volvemos a comprobar
+con which csh.
+
+Crear el usuario con las condiciones pedidas: sudo useradd -m -d /home/usuario2 -g grupo_so2 -c "primer usuario general" -s /bin/bash alumno2.
+Sino se pone -m el directorio /home/usuario2 no se crearía automáticamente.
+Las cuentas quedan bloqueadas hasta que se les asigna una contraseña. sudo passwd alumno 2, alumno2.
+
+5. Modifica el shell predeterminado del usuario alumno2 para que sea el shell bash.
+
+5.sudo usermod -s /bin/bash alumno2.
+
+6. Elimina el grupo grupo_so2, ¿estás seguro de que lo has eliminado?
+
+6.sudo groupdel grupo_so2.
+  *Si el grupo es el principal de algún usuario no te dejará y saltará mensaje de error, para arreglarlo cambiamos el
+  grupo principal del usuario a otro como: sudo usermod -g users [Nombre] y así ya puedes eliminarlo.
+  Comprobación de eliminación: grep grupo_so2 /etc/group.
+
+7. Realiza los siguientes pasos:
+a) Mediante conmutación completa (comando su -, cargando toda la información del entorno del usuario) cambia la sesión al usuario alumno1 y a continuación cambia la sesión al usuario alumno2 (comando su). Determina el directorio de inicio que tiene cada una de esas dos sesiones
+b) ¿Cuál es el directorio actual si desde la sesión abierta con el usuario alumno1 ejecutas el comando su alumno2? ¿Cuál es el login con el que te reconoce el sistema?
+
+7.a) su - alumno1(Conmutación completa).
+     -Se cargue todo el entorno del usuario
+     -Se establezcan sus variables
+     -Se cambie al directorio HOME del usuario
+     Comprobamos directorio actual con: pwd.
+     El resultado será /home7alumno1 porque "su -" te lleva directamente a su directorio personal.
+
+  b) su alumno2(Conmutación no completa).
+     Sólo cambia el usuario, pero mantiene el entorno y directorio actuales.
+     pwd devolverá /home/alumno1.
+
+8. Desde la sesión del alumno1, intenta eliminar el usuario alumno2 sin usar el comando sudo. ¿Qué ocurre?
+
+8.userdel alumno2 desde alumno1 da un error de permiso denegado. Sólo puede hacerlo un root:
+sudo uderdel alumno2 borra el usuario, y sudo userdel -r alumno2 también su directorio home.
+
+
+9. ¿Cómo puedes saber qué comandos puedes ejecutar con el usuario actual con el comando sudo?
+
+
+9.Para saber que comandos puedes ejecutar con sudo: sudo -l, revisando el archivo sudoers: sudo cat /etc/sudoers o
+con sudo visudo que abre /etc/sudoers en un editor y lo protege(no es lo mismo que abrirlo con vi o nano) y permite además modificar los permisos sudo de los usuarios.
+
+
+10. ¿Cómo puedes saber qué comandos puede ejecutar el usuario alumno2 con el comando sudo?
+
+
+10.Cambia a alumno2 con su - alumno2.
+   sudo -l: Listas los permisos sudo.
+
+11. Conmuta tu sesión al usuario alumno1, y desde él intenta eliminar con el comando sudo el usuario alumno2. ¿Qué ocurre?
+
+
+11.No deja porque alumno1 no esta en el sudoers file(no tiene permisos administtrativos).
+
+
+12. Modifica el fichero de configuración sudoers, desde la sesión de adminso2, para que el usuario alumno1 pueda ejecutar cualquier comando, desde cualquier terminal, actuando como cualquier usuario. Posteriormente repite el ejercicio 11.
+
+
+12.Modificar sudoers para que alumno2 tenga permisos completos.
+   su - adminso2
+   sudo visudo
+   Dentro del editor, añade la siguiente línea al final:
+   alumno1 ALL=(ALL:ALL) ALL
+
+
+13. Usa el comando sudo -i para realizar el borrado de todos los usuarios y grupos que se han creado en esta actividad.
+   
+
+13.sudo -i: cambia a una sesión de root completa.
+   userdel -r(elimina también home) [Usuario]
+   groupdel [NombreGrupo] *Sólo se puede si ningún usuario lo tiene de principal. 
+   Comprobamos con grep alumno y grep grupo_so2.
+   Por último exit para salir de la sesión root.
+      
+  
+
+-Práctica 3 : Teoría
+
+Puntos de estudio de esta práctica:
+
+1."Todo es un archivo" y porque /dev no es una carpeta normal.
+En linux el kernel tiene muchos archivos especiales en /dev.
+En /dev no hay datos como en un fichero normal, sino interfaces (nodos de dispositivos) con un major code que indica el tipo de dispositivo(audio, video ...)
+y el minor que da detalles más concretos sobre el(altavoz, auricular ...).
+
+2.Dispositivos de bloque vs dispositivos de carácter.
+
+2.1 Los dispositivos de bloque:
+Se accede por bloques de tamaño fijo.
+Permite acceso aleatorio.
+Ejemplos: USB, SSD...
+
+2.2 Los dispositivos de carácter:
+Flujo secuencial(carácter a carácter).
+
+3.Comandos.
+lsblk: Te muestra el árbol del disco, particiones y cosas cómo size, type, mountpoint...
+
+sudo fdisk -l: Proporciona información detallada sobre las particiones, tabla de
+particiones (MBR o GPT) y tamaños. Es útil para un diagnóstico
+técnico preciso.
+
+df -h: Indica qué particiones están montadas actualmente y su nivel de
+ocupación, en un formato orientado al uso del almacenamiento. La
+opción -h muestra los tamaños en unidades legibles por humanos
+(MiB, GiB).
+
+du:  tamaño de directorios y ficheros
+
+fsck: comprobación y reparación de sistemas de archivos
+
+4.Particionado: qué es y para que sirve.
+Particionar es dividir el disco en "trozos" de manera lógica para poder:
+Crear sistemas de archivos separados.
+Crear swap(Se verá más adelante que es y para que sirve).
+Reservar particiones de arranque.
+
+
+5.Estándares de tablas de particiones(MBR VS GPT).
+
+5.1 MBR
+Máximo 4 particiones.
+Para más usas 1 extendida cómo "contenedor" y dentro lógicas.
+Límite del tamaño del disco: 2TB.
+
+5.2 GPT
+Soporta discos enormes.
+Hasta 128 particiones típicamente(aunque depende de implementación).
+Guarda copias de la tabla de particiones.
+Es el estándar con UEFI.
+Recomendado hoy en día casi siemppre.
+
+
+6.Tipos de particiones.
+Primaria: Partición directa, en MBR cómo máximo 4.
+Extendida: Sólo en MRB, es un contenedor con particiones lógicas.
+Lógica: Partición dentro de una extendida.
+*Especiales*
+ESP.
+SWAP.
+BIOS BOOT.
+
+7.Herramientas de particionado.
+fdisk: muy usado tradicionalmente para MBR(también se usa en GPT).
+gdisk: orientado a GPT.
+parted: potente.
+cfdisk: interfaz más amigable.
+
+8.Sistemas de archivos, qué es y ejemplos.
+Un sistema de archivos define cómo se organizan directorios y archivos, cómo se guardan metadatos
+y mecanismos de fiabilidad.
+Comunes: ext4(estándar en Linux), XFS...
+
+9.Swap.
+Swap = espacio en disco duro usado cómo apoyo de RAM.
+Dos formas:
+1.Partición swap
+2.Archivo swap
+
+10.Dispositivo loop: montar un archivo cómo si fuera un disco.
+Un loop device permite tratar un archivo cómo dispositivo de bloque.
+
+
+
+-Práctica 3 : Práctica
+
+1. Particiona el disco /dev/sdb (inicialmente vacío) de la máquina virtual
+correspondiente al entorno de trabajo de prácticas (disponible en Moovi para
+descarga e instalación). A continuación, debes de crear distintos sistemas de
+archivos en cada una de las particiones, según se detalla:
+a) Crea las siguientes particiones con el comando fdisk:
+Dos particiones primarias de 25MiB cada una (/dev/sdb1,
+/dev/sdb2).
+Una partición extendida con el resto del espacio (/dev/sdb3).
+Dos particiones lógicas de 10 MiB cada una dentro de la partición
+extendida (/dev/sdb5, /dev/sdb6).
+b) Crea los siguientes sistemas de archivos en las particiones del disco
+/dev/sdb:
+/dev/sdb1 de tipo ext3 (comando mkfs.ext3).
+/dev/sdb2 de tipo ext4 (comando mkfs.ext4).
+/dev/sdb5 de tipo ntfs (comando mkfs.ntfs).
+/dev/sdb6 de tipo ext2 (comando mkfs.ext2).
+Nota: Puedes comprobar el resultado con el comando parted -l /dev/sdb
+c) Crea los siguientes puntos de montaje en /mnt y monta las particiones
+de /dev/sdb:
+/dev/sdb1 en /mnt/uno
+/dev/sdb2 en /mnt/dos
+/dev/sdb5 en /mnt/tres
+/dev/sdb6 en /mnt/cuatro
+Nota: Puedes comprobar el resultado con el comando mount o con df –hT
+d) ¿Cómo harías para que el montaje se realice de forma automática en el
+arranque del sistema? Configura el archivo /etc/fstab 
+
+1.a)sudo fdisk /dev/sdb
+
+Crear /dev/sdb1 primaria 25MiB
+
+n (new)
+
+p (primary)
+
+1 (partition number)
+
+Enter (primer sector por defecto)
+
++25M
+
+Crear /dev/sdb2 primaria 25MiB
+
+n(new)
+
+p(primary)
+
+2
+
+Enter
+
++25M
+
+Crear /dev/sdb3 extendida con el resto
+
+n
+
+e (extended)
+
+3
+
+Enter
+
+Enter (usa todo el espacio restante)
+
+Crear /dev/sdb5 lógica 10MiB (dentro de la extendida)
+
+n
+
+l (logical) (a veces no pregunta y ya crea lógica automáticamente)
+
+Enter
+
++10M
+
+Crear /dev/sdb6 lógica 10MiB
+
+n
+
+l
+
+Enter
+
++10M
+
+Ver y guardar
+
+p (print) → deberías ver:
+
+sdb1 25M primary
+
+sdb2 25M primary
+
+sdb3 extended (resto)
+
+sdb5 10M logical
+
+sdb6 10M logical
+
+w (write)
+
+Saldrá y aplicará cambios.
+
+1.b)ext3 en sdb1
+sudo mkfs.ext3 /dev/sdb1
+
+ext4 en sdb2
+sudo mkfs.ext4 /dev/sdb2
+
+ntfs en sdb5
+sudo mkfs.ntfs -f /dev/sdb5
+
+ext2 en sdb6
+sudo mkfs.ext2 /dev/sdb6
+
+
+Comprobar con parted (como pide el enunciado):
+
+sudo parted -l /dev/sdb
+
+
+1.c) Crear puntos de montaje y montar
+
+Crear directorios:
+
+sudo mkdir -p(crear padres y no fallar si ya existe) /mnt/uno /mnt/dos /mnt/tres /mnt/cuatro
+
+Montar:
+
+sudo mount /dev/sdb1 /mnt/uno
+sudo mount /dev/sdb2 /mnt/dos
+sudo mount /dev/sdb5 /mnt/tres
+sudo mount /dev/sdb6 /mnt/cuatro
+
+
+2.Crea un sistema de archivos sobre un archivo y móntalo. Para ello, debes seguir
+los pasos que se detallan a continuación:
+a) Usando el comando dd, crea un archivo lleno de ceros (formateo de
+bajo nivel) que ocupe 30MiB, denominado midisco en la raíz “/”.
+(comando dd).
+ GRAO EN ENXEÑARÍA INFORMÁTICA
+SISTEMAS OPERATIVOS II
+19
+b) Vincula el archivo /midisco con un dispositivo loop device usando el
+comando losetup (comprueba cuál es el primero libre, por ejemplo, el
+dispositivo /dev/loop0).
+c)Comprueba con el comando lsblk que se identifica con un dispositivo
+de bloques.
+d) Crea un sistema de archivos de tipo ext3 en el dispositivo creado
+anterior.
+e) Crea un punto de montaje, en el directorio /media/disco1 para
+montar el loop device.
+f) Monta el nuevo sistema de archivos, contenido en el dispositivo loop
+device, en el punto de montaje creado en el paso anterior, con opciones
+de lectura/escritura y que no permita ejecutables.
+g) Crea un pequeño script que muestre en pantalla un texto e intenta
+ejecutarlo. ¿Qué ocurre?
+
+bs(tamaño bloque), count(número de bloques).
+2.a)sudo dd if=/dev/zero of=/midisco bs=1M count=30
+comprobamos con ls -lh /midisco
+
+2.b)Ver qué loop está libre:
+
+sudo losetup -f
+
+Te devolverá algo como /dev/loop0 (o el siguiente libre).
+
+Asociarlo:
+
+sudo losetup /dev/loop0 /midisco
+
+2.c)lsblk | grep -E 'loop0|midisco'
+
+2.d)sudo mkfs.ext3 /dev/loop0
+
+2.e)sudo mkdir -p /media/disco1
+
+2.f)sudo mount -o rw,noexec /dev/loop0 /media/disco1
+
+2.g)¿Qué ocurre y por qué?
+
+Lo normal es que falle con un error tipo:
+
+Permission denied
+
+Motivo: montaste el filesystem con la opción noexec, que impide ejecutar binarios y scripts desde ese punto de montaje, aunque el archivo tenga chmod +x.
+
+
+3.Aumenta el espacio de swap utilizando un archivo regular /swap de tamaño
+300MiB. Para ello, realiza los siguientes pasos:
+a) Muestra el swap en uso. ¿Cómo podrías indicar al sistema que utilice
+más swap?
+b) Crea en la raíz del sistema un archivo de 300MB mediante el comando
+dd (se puede variar el tamaño, si el sistema anfitrión no tiene suficiente
+espacio).
+c) Impide toda consulta no permitida al contenido del archivo.
+d) Estructura el archivo para que el núcleo pueda usarlo como espacio
+swap (comando mkswap).
+e) Comprueba con el comando file que la operación ha sido un éxito.
+f) Activa el nuevo espacio de swap. (comando swapon).
+Notifica al núcleo de que debe usar este nuevo espacio.
+Comprueba que el núcleo hace uso del nuevo espacio.
+g) Haz referencia en el archivo /etc/fstab a este nuevo espacio:
+Añade en el archivo fstab una línea que haga referencia al nuevo
+espacio de swap.
+Reinicia el sistema.
+Comprueba que se haya tenido en cuenta el nuevo espacio.
+
+3.a) swapon --show: lista swaps activos.
+free -h: enseña la RAM y SWAP usada/libre.
+sudo sysctl vm.swappiness=80 para usar más.
+(Para hacerlo permanente: /etc/sysctl.conf → vm.swappiness=80, pero en esta práctica normalmente con temporal basta.)
+
+3.b)sudo dd if=/dev/zero of=/swap bs=1M count=300
+sudo ls -lh /swap para comprobar que existe.
+
+3.c)sudo chmod 600 /swap
+
+3.d)sudo mkswap /swap
+
+3.e)file /swap
+Salida típica:
+
+Linux swap file, ...
+
+Si ves eso, está OK.
+
+3.f)sudo swapon /swap
+
+3.g)sudo nano /etc/fstab
+Añadir esta línea al final:
+
+fstab
+Copiar código
+/swap  none  swap  sw  0  0
+Reiniciar:
+
+sudo reboot
+
+Comprobar tras reinicio:
+
+swapon --show
+free -h
+
+
+
+-Práctica 4 : Teoría
+
+1.Expresiones regulares:
+
+Una expresión regular es una secuencia de caracteres que conforman un patrón de búsqueda.
+Ejemplo: Buscar en un archivo dde texto las lineas con la palabra amarillo, que puede estar escrito
+con a mayúscula o minúscula y que puede que esté en plural.
+
+En este tema veremos que se puede hacer con este comando:
+grep -E(Para escribir cosas de forma literal, como +) '[Aa]marelas?'(Interrogación es que puede estar o no la 'S') file.txt
+
+Literal: Caracteres que se buscan tal cual.
+Metacarácter: Caracteres con significado especial como . que significa cualquier carácter.
+Escape(\): Se usa para que un metacarácter cambie su funcionamiento.
+Cuando haces grep -E [+, ?, { }, ( ), |] a estos no hace falta ponerles \, porque sino haran
+su función normal.
+
+
+Metacaracteres "Fijos" (No cambian nunca)
+Estos funcionan exactamente igual con grep y con grep -E. Siempre son especiales y nunca llevan barra (a menos que quieras buscarlos literalmente).
+
+. : Cualquier carácter.
+
+* : 0 o más repeticiones.
+
+^ : Inicio de línea.
+
+$ : Final de línea.
+
+[ ] : Rangos o conjuntos.
+
+
+Metacaracteres "Cambiantes".
+
++ : 1 o más veces : Con grep(básico) necesita barra(\+) : Con grep -E sin barra.
+
+? : 0 o 1 vez : Con grep(básico) necesita barra(\?) : Con grep -E sin barra.
+
+{n,m} : De n a m veces : Con grep(básico) necesita barras \{n,m}\: Con grep -E sin barra. Puede ser rango cerrado como ese. {n,} abierto de n repeticiones o más. O cerrado de exactamente n veces: {n}.
+
+( ) : Grupos/subexpresiones : Con grep(básico) necesita barras \( \) : Con grep -E sin barra.
+
+| : OR(Uno o otro) : Con grep(básico) necesitas barra (grep 'A\|B') : Con grep -E sin barra (grep -E 'A|B').
+
+2.Expresiones regulares básicas:
+
+Muchos comandos de linux permiten el uso de expresiones regulares. En el ejemplo de antes usamos el comando grep para encontrar
+linenas con la expresión regular indicada. Se explicará algo más sobre este comando más adelante.
+
+grep ’[A-Z]-[0-9]’ file.txt
+Busca una mayúscula seguida de un guión literal y luego un número.
+
+Para buscar un - tiene que estar pegado a alguno de loss corchetes. Ej: 
+Al principio: grep '[-abc]' archivo.txt (busca el guion, la 'a', la 'b' o la 'c').
+Al final: grep '[abc-]' archivo.txt (lo mismo que el anterior).
+
+Rangos estándar de linux(Clases de Caracteres POSIX):
+
+[:alnum:] Caracteres alfanuméricos, A-Z,a-z e 0-9 .
+
+[:alpha:] Caracteres alfabéticos, A-Z e a-z.
+
+[:digit:] Dı́xitos numéricos, 0-9.
+
+[:blank:] Espazos en blanco e tabuladores.
+
+[:lower:] Letras minúsculas, a-z.
+
+[:upper:] letras maiúsculas, A-Z.
+
+---------------------------------------------------------------------
+grep ’[A-Z]-[0-9]’ file.txt esto con Posix sería: grep ’[[:upper:]]-[[:digit:]]’ file.txt
+
+Ejemplo:
+Buscar líneas que acaben en punto : grep ’\.$’ file.txt
+
+Dentro de los corchetes si usamos ^ cambia su significado. Equivale a cualquier carácter que no esté en este conjunto:
+grep 'a[^0-9]' file.txt
+
+* para indicar 0 o más. Para buscar lineas con dos x o más grep 'xxx*' file.txt
+
+grep ’^A.*a$’ file.txt : Aquí sería lineas que empiecen por A mayúscula y sigan por un caracter cualquiera repetido
+tantas veces como sea(0 o más) y acabado por a minúscula.
+
+.* significa cualquier carácter repetido 0 o más veces.
+
+grep ’casas\?’ file.txt : ? sólo es un literal, hay que poner siempre la barrra. Indica que lo que le precede 0 o 1 vez.
+ 
+grep ’x\+’ file.txt : lineas con una o más x.
+
+grep ’[0-9]\{3,6\}[A-Z]’ file.txt : buscar lineas que tengan una secuencia de 3 a 6 dígitos seguidos de una mayúscula.
+Tambiién se podría poner tan sólo un número grep ’[0-9]\{3,\}[A-Z]’ file.txt y serían 3 o más repeticiones.
+
+Otro metacarácter muy útil es | que sirvecomo OR lógico. Buscar dos aa o una A : grep ’aa\|A’ file.txt
+
+
+También podemos poner delimitadores de palabra para buscar justo por ejemplo la palabra aurora : 
+grep ‘\<[Aa]urora\>’ file.txt
+
+
+Los paréntesis sirven para hacer subexpresiones y luego poder referirnos a ellas mediante números : 
+Queremos que se busquen líneas que tengan dos números, cualquiera combinación de caracteres y después la misma secuencia de números:
+grep ’\([0-9][0-9]]\).*\1’ file.txt
+
+Ejemplos: 
+
+1. Número de tarxeta de crédito en formato XXXX-XXXX-XXXX-XXXX ou XXXX XXXX XXXX XXXX
+grep -E '([0-9]{4}[- ]){3}[0-9]{4}'
+
+2. Validación dun valor monetario no formato: 2.25$. Ou sexa un número real con dous dı́xitos decimais rematado no sı́mbolo $.
+grep -E '[0-9]+\.[0-9]{2}\$$' file.txt
+
+3. Dirección de correo electrónico válida
+grep -E '[[:alnum:]]+@[[:alnum:]]+\.[[:alnum:]]{3}'
+
+grep -v: Mostrar las líneas que NO contienen la expresión regular.
+grep -v ’[0-9]’ file.txt : Todas las lineas que no tengan números.
+
+grep -r: Se suele usar pasando una carpeta c omo argumento, ya que lo que hace es buscar recursivamente
+en todos los archivos de dicha carpeta.
+grep -Er ’[0-9]{8}[[:alpha:]]’ DNIs : Buscar DNI´s.
+
+EJEMPLOS: 
+Como fariades para buscar en todos os arquivos da carpeta
+proba liñas que conteñan o seguinte: ”contrasinal:” seguido dunha serie de entre 4 e 10
+caracteres alfanuméricos, podendo incluir tamén os sı́ mbolos -,#,@, e finalizando cun
+sı́ mbolo ”;”.
+grep -Er 'contrasinal:[[:alnum:]#@-]{4,10};' proba/
+
+
+Un pouco mais complicado. E se quixesemos atopar as liñas que conteñan o patrón
+anterior e, na mesma liña, unha segunda copia da mesma clave? Refirome por exemplo
+a liñas como esta:
+queremos liñas con contrasinal:alfa@#3; que se repita, alfa@#3 esta liña
+contrasinal:alfa@#3; a agora beta@3 non servirı́a. 
+grep -Er 'contrasinal:([[:alnum:]#@-]{4,10});.*\1' proba/
+
+
+
+-Práctica 4 : Práctica
+
+
+1. Amosa as liñas de /etc/group que rematen en “:”
+grep ':$' /etc/group
+
+
+2. En /etc/passwd localiza as liñas que conteñan a palabra “root”.
+grep 'root' /etc/passwd
+
+
+3. Conta cantas liñas de /etc/passwd conteñen a cadea “/bin/bash”
+grep '/bin/bash' /etc/passwd | wc -l
+
+
+4. En /etc/passwd amosa as contas de usuario que comencen por vogal.
+grep '^[AEIOUaeiou]' /etc/passwd 
+
+
+5. Amosa as contas de /etc/passwd que conteñan un UID de exactamente 3 dixitos.
+grep -E '^([^:]+:){2}[[:digit:]]{3}:' /etc/passwd
+
+
+6. Amosa as liñas do arquivo /var/log/syslog que conteñan 3 ou mais espazos
+seguidos (emprega o metacaracter +).
+Nota: Podes instalar e habilitar rsyslog no equipo empregando os comandos:
+sudo apt install rsyslog
+sudo systemctl enable rsyslog
+sudo systemctl start rsyslog
+grep -E '[[:blank:]][[:blank:]][[:blank:]]+' /var/log/syslog
+
+
+7. En /etc/group amosa só os grupos cuxos nomes estén formados por letras
+minúsculas.
+grep -E '^[[:lower:]]+:' /etc/group
+
+
+8. Busca en /var/log/syslog as liñas que conteñan a palabra “error” ou “warning”
+en maiúsculas ou minúsculas.
+grep -Ei 'error | warning' /var/log/syslog
+grep -E '[Ee][Rr][Rr][Oo][Rr]|[Ww][Aa][Rr][Nn][Ii][Nn][Gg]' /var/log/syslog
+
+
+9. Agora imos construir unha expresión para identificar expresións IP válidas. Primeiro
+podes facer un intento buscando so 4 números de ata 3 díxitos separados por
+puntos. Despois trata de mellorala sabendo que eses números teñen que estar
+entre o e 255.
+grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' arquivo
+Versión PRO fumadote: [0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]{1,2}|1[0-9]{2}|2[0-4][0-9]|25[0-5])$' arquivo
+
+
+10.Buscar en /var/log/auth.log duas ocurrencias da mesma IP nunha liña.
+grep -E '([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*\1' /var/log/auth.lo
+
+
+11.Buscar as liñas do arquivo /etc/passwd que conteñan o nome de usuario tres
+veces na mesma liña.
+grep -E '^([[:alnum:]]+):.*\1.*\1' /etc/passwd
+grep -E '^([^:]+):.*\1.*\1' /etc/passwd
+
+
+12. Busca as liñas do arquivo /var/log/syslog que conteñan datas no formato
+yyyy/mm/dd ou yyyy-mm-dd
+grep -E '[[:digit:]]{4}[/-][[:digit:]]{2}[/-][[:digit:]]{2}' /var/log/syslog
+
+
+13.Busca nun arquivo de texto códigos postais españoles válidos. Como farias?
+grep -E '\<(0[1-9]|[1-4][0-9]|5[0-2])[0-9]{3}\>' arquivo.txt
+
+
+14.Busca na saída do comando dmesg as liñas que conteñan palíndromos de 3 letras.
+E como farias para que atopase as de 4 letras? E as de 3 ou 4 letras?
+dmesg | grep -Ei '\<([a-z])[a-z]\1\>'ç
+dmesg | grep -Ei '\<(([a-z])[a-z]\2|([a-z])([a-z])\4\3)\>'
+
+
+
+
+-Práctica 5 : Teoría
+
+SED es la abreviatura de stream editor. Opera sobre un flujo de texto que recibe como entrada
+y que envía transformado a la salida.
+Cómo comando de Linux va a operar sobre un archivo de entrada, recibiendo y operando linea a linea
+para despues enviarla o enviarlas cara otro archivo o a la salida estándar.
+
+Es un comando muy útil para el admin del sistema porque le permite hacer programas para procesar
+archivos de texto.
+
+En el sed cada línea va entrando en el espacio de patrones donde se le aplican los cambios.
+Sed  t ambién tiene otro epacio llamado espacio de almacenamiento que actúa cómo zona de memoria
+de manera que el espacio de patrones puede ser almacenado ahí y recuperado posteriormente.
+Finalmente el contenido del espacio de patrones será enviado a la salida antes de procesar
+la siguiente línea.
+
+Sintaxis básica : sed [opciones] [-e 'script'] [-f programa] file(s).
+
+Ejemplo simple:sed -e '11,$d' file.txt
+-e indica que lo que sigue es el script a ejecutar.
+11,$ indica que de a fila 11 a la última.
+d inddica que sobre el anterior rango se borre lo que abarque.
+
+Opciones interesantes del sed:
+-n: Anula la salida automática y las salidas se harán con el comando p que se verá más adelante.
+-r|E : expresiones regulares extendidas.
+-i: sobreescribe el archivo SIN crear copia de seguridad.
+-i.bak: crea copia de seguridad.
+-s: si pasamos varios archivos se tratan de forma independiente y no cómo un todo.
+-e: Para indicar que lo que viene son las instrucciones, pero si las separas en caso de poner
+más de una con ; es opcional.
+-E: expresiones regulares extendidas, las de siempre menos {}, es decir, + ? | ().
+
+En cuanto al script, la sintaxis básica sería [rango], intrucciones, [argumentos]
+Ejemplo:sed -e '1,5s/error/CORREGIDO/g' log.txt de la linea 1 a la 5 si ves error cambialo por corregido en toda la linea(g).
+
+Lo primero de todo que se ve es el rango, sino lo dan se aplica todas las líneas. Si se necesitan
+usar varias expresiones se separan con ;. Si sólo ponemos un número enel rango estamos diciendo
+que queremos que sólo se aplique a esa linea. Un caso particular sería $ que se refiere a la 
+última línea. Si queremos indicar un rango de líneas separamos con ,.
+
+También puede aparecer aquí expresiones regulares, en ese caso tienen que ir entre / /. Ya que no
+es un comando, es un patrón a buscar.
+
+Ejemplo: Todas las líneas que emiecen por a se borran.
+sed -e ’/^a/d’ file.txt
+
+Por último, ! indica lo contrario.
+Por ejemplo aquí, todas las lineas menos la 20 se borran.
+sed -e '20!d' file.txt.
+
+Instrucciones:
+
+1.d(Borrado).
+Ejemplo: sed -e ’/^a/,$d’ file.txt.
+Borrar desde la primera línea que empiece por a, hasta el final.
+
+2.s/patron/novo/flag.
+Uno de los comandos más usados, la s indica substitución.
+Busca un patrón y si lo encuentra lo substituye por lo que le dices.
+Ejemplo: sed -r ’s/[0-9]+/N/’ file.txt.
+Si encuentra uno o más números seguidos los substituye por una N.
+Así sólo lo haría para el primer número que aparezca en la línea. Si lo queremos para  toda
+debemos usar el flag g.
+sed -r ’s/[0-9]+/N/g’ file.txt.
+
+Otro de los flags útiles en esta instrucción es p que hace print.
+Un ejemplo para entenderlo:
+sed -n -e ’s/^[0-9].*[0-9]$/liña con números/p’ file.txt
+Invocamos sed con -n que como recordamos suprime la salida automática. Después vemos la 
+instrucción de substitución que substituye las líneas que empiezan por un número, tienen
+cosas random en medio y acaban en número por "líneas con números". Y ademas imprimirá un línea de
+números por cada línea que cumpla el patrón.
+
+Otro ejemplo interesante y más completo: 
+sed -n -r ’s/^[0-9]+([^0-9].*[^0-9])[0-9]+$/\1/p’ file.txt.
+Tenemos -n para desactivar la salida automática y -r para expresiones regulares extendidas.
+Luego buscamos líneas que cumplan el siguiente patrón:
+Que la línea empiece por un o más números, seguidos de un NO número seguido de uno o más 
+caracteres cualesquiera seguidos otr vez de un NO número y rematado en uno o más números.
+Todo eso se sustituye por el "seguidos de un NO número seguido de uno o más 
+caracteres cualesquiera seguidos otr vez de un NO número" y se imprimen las líneas donde
+se cumpla el patrón y por tanto se substituya una cadena por la otra. Finalmente se enseña
+lo cambiado por p.
+Si en vez de \1 pusieramos &, enseñaría toda la línea.(Ignoraría s).
+
+
+3.q Indica que hai que rematar o procesado das liñas e saír.
+Ejemplo: sed -e ’/^$/q’ file.txt
+Si encuenta una línea vacía acaba el procesado y sale.
+Por lo tanto enseña todas las líneas hasta la primera vacía.
+
+
+4. Enviar a liña cara a saída. Enviar a liña cara a saída.(Acompañado de -n al principio).
+
+
+5.n Copia o contido do espazo de patróns na saída e carga a seguinte liña.
+Ejemplo: sed -e ’/^[0-9]/{n;s/[0-9]/x/g}’ file.txt
+
+Importancia de {} aquí, para agrupar instrucciones.
+Este comando busca líneas comenzadas por número y la envía a salida y carga la siguiente.
+Y e n esa cambia sus números por x.
+Si quitas las llaves la segunda instrucción se le hace a todas las líneas.
+
+
+
+5.y substitúe un conxunto de caracteres por outro. Vexamos un exemplo:
+sed -e ’y/aeiou/AEIOU/
+Si encuentra una vocal minúscula la cambia a mayúscula.
+
+
+6.a,i,c Engade (append), inserta (insert) ou cambia (change) un texto despois,
+antes ou no canto da liña actual. Van un par de exemplos:
+
+sed -r ’/[0-9]+/i\---’ file.txt 
+añade --- antes en las lineas con números.
+
+sed -e ’10 c\liña 10 suprimida’ file.txt
+cambia la linea 10 por linea suprimida(sobreescribe).
+
+
+Control de flujo de entrada:
+
+n: Básicamente, uno sí y otro no.
+Lee uno, le da salida, carga el otro y ahí aplica el patrón.
+Ejemplo: sed '/PATRON/{n; s/A/B/}' archivo
+	cuando encuentra una línea con patrón a esa no le hace nada y cambia la siguiente.
+
+N: Anexa la nueva línea al espacio de patrones actuales con la que ya hay(va de 2 en 2).
+sed '/\\$/{N; s/\\\n//}' datos.txt
+Las líneas acabadas por \, añade la siguienté así a continuación con \n invisible.
+Y borra el \ y el \n por nada en ambas líneas quedando de seguido.
+
+
+Espacio de almacenamiento:
+
+h/H: h, copia el contenido del espacio de patrones en el espacio de almacenamento.
+H hace lo mismo pero añadiendo un salto de líinea antes.
+
+
+g/G: g copia el contenido del espacio de almacenamiento en el espacio de patrones, sobreescribiendo
+lo que tuviese en ese momento. El comando G hace lo mismo añadiendo antes un salto de línea.
+
+
+x(eXchange): Intercambia lo que hay en el espacio de patrones con lo que hay en el espacio
+de almacenamiento.
+
+
+EJEMPLO: sed '12,20{H;d} ; ${G}' texto.txt
+De la linea 12 a la 20 se copia el contenido del espacio de patrones en el de almacenamiento con un salto de línea previo
+y se elimina del espacio de patrones.
+
+Luego al contenido de la última fila se le añaden las líneas 12 a 20 con un salto de linea previo(\n).
+Con esto conseguimos que las líneas 12 a 20 salgan después de la última fila.
+Técnicamente es una súper fila dividida en varias, pero visualmente pasa eso.
+
+
+
+-Práctica 5 : Práctica
+
+1. Cando executas o comando man ls hai liñas en branco na saída. Como podemos 
+eliminar todas esas liñas e ver unha versión “compacta” desa páxina do manual? 
+man ls | sed -e '/^$/d' file.txt
+man ls | sed -e '/^[[:blank::]]*$/d' file.txt
+
+
+2. Como podemos ver as 10 primeiras liñas dun arquivo e rematar xa, sen procesar o 
+resto das liñas?
+sed -e '10q' file.txt
+
+
+3. Crea unha copia do arquivo /etc/passwd na túa carpeta persoal. Como podemos 
+substituír o /bin/bash por /bin/csh nese arquivo? 
+sed -e 's/\/bin\/bash/\/bin\/csh/g' /etc/passwd
+
+
+4. Agora elimina todas as liñas que conteñan /usr/sbin/nologin.  
+sed -e '//usr\/sbin\/nologin/
+
+
+5. As liñas do arquivo /var/log/auth.log empezan cunha data en formato YYYY-MM-DD. 
+Queremos ver o seu contido pero coas datas en formato DD-MM-YYYY. Indica como facelo.
+sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\3-\2-\1/g' /var/log/auth.log
+
+
+6. Copia o arquivo /etc/ssh/sshd_config na túa carpeta persoal. 
+Queremos descomentar a liña que contén PermitRootLogin e cambiar o seu valor a “no” 
+(a liña pode estar comentada ou non).
+sed -Ei 's/^#?PermitRootLogin.*/PermitRootLogin no/' ~/sshd_config_copia
+
+
+7. Traballando coa copia do arquivo passwd, queremos obter un listado dos usuarios no formato UID-nome de usuario, 
+nada mais.
+sed -E 's/(^[^:]+):.*:([^:]+):.*/\2-\1/g' passwd
+
+
+8. O arquivo /var/log/auth.log contén información sobre os inicios de sesión dos diferentes usuarios. 
+Queremos obter un listado dos inicios de sesión dun día determinado. O formato de saída debería 
+ser o seguinte:
+Hora: 09:45 usuario: root
+Hora: 09:48 usuario: anton
+sed -n '/Mar 11.*session opened/ s/^.* \([0-9]\{2\}:[0-9]\{2\}\):[0-9]\{2\}.*for user \([^ ]*\).*$/Hora: \1 usuario: \2/p' /var/log/auth.log
+
+
+9. Como podes duplicar facilmente as liñas dun arquivo? Proba por exemplo con /etc/passwd
+sed -i '
+sudo sed -i 'p' /etc/passwd
+
+
+10. Na saída do comando dmesg interésanos atopar aqueles casos nos que algo fallou. 
+Corresponderá cunha liña que conteña algunha variante da palabra “fail”.
+Queremos que nos amose o contido da liña anterior,
+xunto con esa mesma liña, e despois remate xa o comando.
+dmesg | sed -n -e '/[Ff][Aa][Ii][Ll]/ {x; p; x; p; q;}' -e 'g'
+
+
+11. No ficheiro .bash_history da carpeta persoal do usuario gárdase a caché de comandos 
+executados polo mesmo. 
+Queremos que para o usuario actual se amosen primeiro todas os comandos que non se 
+executaron cun sudo diante (as liñas que non conteñen a palabra sudo), 
+e ó final todos os que sí (as liñas que sí a conteñen).
+sed -n '/sudo/ {H; d}; p; ${g; s/^\n//; p}' ~/.bash_history
+
+
+12. Para final pediremos escribir un comando para reformatear un arquivo de C++. 
+Supoñamos que todas as funcións están declaradas antes do main e o seu corpo aparece despois do main.
+A idea é facer que a función main apareza ao final. Se
+podes eliminar tamén a declaración das funcións, que agora xa non fai falta, mellor. 
+Supón que todo está correctamente formateado.
+sed -n '/\(.*\);$/d; /^int main/,/^}/ {H; d;}; p; $ {g; p;}' arquivo.cpp > novo_arquivo.cpp
+
+
+
+-Práctica 6 : Teoría
+
+AWK es igual que el sed. Editor de flujo de texto, opera sobre un flujo de datos de entrada y lo
+manda cara la salida. Pero awk está pensado para trabajar con flujos estructurados, donde
+cada línea(registro) está organizada en campos.
+El mejor ejemplo sería un archivo de texto organizado en filas y columnas, es decir, en formato
+tabla.
+
+En realidad AWK es un lenguaje de programación completo, con funciones, variables, sentencias de
+control...
+
+Los programas awk constan de unas reglas con el siguiente formato:
+patrón {acción};patrón {acción};...
+
+Un ejemplo básico sería:
+awk '/clave/ {print $0}' file.txt
+$0 hace que salga toda la línea.
+
+En este ejemplo el patrón va entre comas simples. En este cso es /clave/ y buscamos lineas que
+tengan ese patrón entero y las imprimimos enteras.
+
+Por defecto awk asume que los campos están separados por espacios-tabuladores. Por lo que
+los campos coinciden con las palabras.
+
+Así como $0 es toda la línea, $1 es el primer campo, $2 el segundo y etc...
+
+Por lo tanto en el ejemplo anterior, para sólo enseñar la primera palabra de cada línea deberiamos
+hacer: awk '/clave/ {print $1}' file.txt.
+
+Ahora veamos un ejemplo con dos reglas:
+awk '/clave/ {print $0};/---/ {print $2}' file.txt
+
+Por último indicar que existen dos patrones muy particulares representados por las palabras 
+BEGIN y END. Las acciones indicadas por el patrón BEGIN se procesaran antes de la primera línea
+del archivo. Permite por ejemplo imprimir una línea de cabecera en la salida. Las acciones
+indicadas por el patrón END se realizarán después de la última línea del archivo. Veamos
+un ejemplo:
+awk ’BEGIN{print "Liñas con clave"};/clave/ {print $0}’ file.txt
+
+Operadores:
+
+1.Operadores aritméticos:+,-,*,\,%,++,--
+
+2.Operadores de asignación:=. Como awk permite crear variables internas con este operador podemos asignarle valores
+a dichas variables. Puede concatenarse con valores aritméticos. Ejemplo: x+=2.
+
+3.Operadores condicionales:==,!=,>,>=,<,<=
+
+4.Comparar expresiones regulares:~, !~. Permiten comparar si la cadena tiene o no la expresión. La normal saca
+las líneas que la tienen, la otra las que no.
+awk ’$0~/x$/ {print $0}’ file.txt : imprime las líneas que acaben en x.
+
+5.Operadores lógicos:&&, ||, !
+
+Ejemplos:
+awk ’$1>100 {print $0}’ file.txt: Imprime las líneas donde el primer campo sea > 100.
+
+awk ’$1 ~ /[0-9]{3}/ || $1 == 10 {print $0}’ file.txt:
+Imprime todas las lineas donde el primer campo tenga justo 3 números, o en las que el primer campo sea igual a 10.
+
+
+Variables:
+
+Como ya dijimos awk permite usar variales internas como cualquier otro lenguaje de programación, sin iniciarlas ni
+definir el tipo previamente.
+Ejemplo:
+awk ’BEGIN {suma=0};/^1/ {suma+=$1};END {print "Suma=",suma}’ file.txt
+Por cada línea que empiece por 1, se le suma el contenido del campo 1 a la variable suma.
+Al acabar la ejecución se imprime el resultado.
+
+Además de las definidas por el usuario, AWK maneja una serie de variables internas muy útiles.
+
+Las más importantes:
+
+1.FS: Abreviatura de field separator. Por defecto awk considera que los campos están separados por espacios o
+tabulados, pero estpuede cambiarse asignando otro valor a esta variable.
+Por eemplo si queremos obtener un listado de los usuarios normales definidos en el sistema, procesando
+o arquivo /etc/passwd, cuyos campos estén separados por el carácter ":", podríamos hacerlo así:
+awk ’BEGIN{FS=":"};$3>999 {print $1,$3}’ /etc/passwd
+
+2.NF: Abreviatura de number of fields: Contiene el número de campos de línea que se están procesando. Variable
+muy útil cuando necesitamos hacer bucles, recorriendo los distintos campos, pero de momento vamos a poner un ejemplo
+muy sencillo: 
+awk ’BEGIN{FS=":"};$3>999 {print $1,$3,$NF}’ /etc/passwd
+Lo mismo que antes, pero como NF es el número de campos de la línea estaríamos sacando el valor del campo 7.
+
+3.NR: Abreviatura de number of records: Contiene el número de registro de la línea que se está procesando.
+awk ’NR<10 {print $0}’ file.txt: Se sacarán por pantalla las líneas de la 1 a la 9.
+
+4.OFS: Abreviatura de output field separator. Cunado ordenamos imprimir una serie de valores separados por ","
+AWK interpreta "," como el separador de campo. Indica que es lo que va a separar a los campos que salgan por pantalla.
+Ejemplo: 
+awk ’BEGIN{FS=":";OFS=","};$3>999 {print $1,$3,$NF}’ /etc/passwd
+Los campos saldrán separados por comas.
+
+
+
+Sintaxis completa:
+
+awk [opciones] [rograma] archivo(s)
+
+Sino se pasan archivos sobre los que operar la entrada es estándar. Pero es muy común utilizar
+el comando awk con tuberías para procesar o filtrar la salida de otros comandos:
+ls -l | awk ’$6 == "nov" {sum += $5} END{print sum}’
+Filtra la salida de ls -l y por cada línea que su campo 6 sea exactamente nov, se le suma a
+una variable suma el campo 5. Al finalizar imprime la variable suma.
+*NO ES NECESARIO INICIALIZAR LAS VARIABLES EN AWK, ASUME QUE TODAS SE INICIALIZAN EN 0.
+
+Como ya indicamos anteriormente el programa tendrá varias instruciones con el formato
+patrón {acción}, separadas por ;. Cuando trabajamos con programas complejos eiste la posibilidad
+de guardar el programa en un archivo separado que acaba en la extensión .awk.
+En este caso las distintas instrucciones pueden escribirse en distintas líneas.
+Después usaremos una de las opciones que indicaremos a continuación para indicar que el programa
+se lea de ese archivo.
+
+Opciones importantes:
+1. -f programa, pedimos que el programa awk se lea del archivo programa.
+2. -F separador, es otra manera de modificar el separador de campos por defecto.
+Ejemplo: awk -F ':'.
+3.-vvar=valor, Con esta opción podeos pasar datos al programa awk.
+
+Ejemplo simple:
+Vamos a modificar elejemplo anterior(awk ’$6 == "nov" {sum += $5} END{print sum}’)
+para escribirlo en un archivo y permitir que el mes específico sea pasado como
+una variable a awk.
+
+Escribimos lo siguiente en un archivo vi llamado por ejemplo espacio_mes.awk.
+
+BEGIN{print "Espacio ocupado por los archivos del mes: " mes}
+$6 == mes {sum+=$5}
+END{print "Total= "sum}
+
+Luego podemos invocar este programa por ejemplo de la siguiente manera desde la línea de comandos:
+
+ls -l | awk -vmes="feb" -f espacio_mes.awk
+
+
+Más cosas:
+Para acabar vamos a presentar una serie de ejemplos más complejos, que nos servirán para introducir
+más las características del comando AWK. 
+Entre ellas la posibilidad para especificar patrones de busca, uso de bucles y finalmente
+algo más avanzado pero potente, los arrays asociativos.
+
+Ejemplos:
+
+1.Filtrar las lineas en blanco de un archivo.
+cat file.txt | awk '{if(NF!=0) print $0}'
+
+2.Enseñar el listado de grupos que tienen más de un usuario.
+
+awk -F: '{ num_membros = split($4, array_temporal, ",") } num_membros 
+> 1 { print $1, "->", num_membros, "membros" }' /etc/group 
+
+-F dice que separacion viene el archivo de entrada. Lla variable num_miembros cuenta el número con la función split que almacena
+el número de usuarios por grupo(campo4) en ese array, y lo hace contando cuantas cosas hay entre comas,
+luego comprueba si el número es mayor a 1, y en caso de que si, imprime el nombre del grupo
+junto al número de miembros.
+
+3.Enseñar la lista de comandos más usados, ordenados por la frecuencia de uso.
+history | awk ’{a[$2]++}END{for(i in a){print a[i] " " i}}’|sort 
+rn|head
+
+4.Extraer la función main de un programa en C.
+awk ’/main/,/^}/’ prog.c 
+*Aquí lo novedoso es que usa un rango de patrones.
+
+
+-Práctica 6 : Práctica
+
+1.Cómo podemos obtener el listado de todos los usuarios normales de un sistema
+visualizando su nombre, UID y home.
+awk -F: '$3 >= 1000 {print "Usuario:", $1, "| UID:", $3, "| Home:", $6}' /etc/passwd
+
+2.Como obtener el listadp de  todos los dispositivos de bloque.
+Major y minor code y nombre del dispositivo.
+awk '{print "Nombre:", $4, "| Major:", $1, "| Minor:", $2}' /proc/partitions
+
+3. Co comando ps -eo pid,user obtemos o listado de procesos amosando só os 
+campos PID e usuario. Filtra a saída dese comando con AWK para obter un listado 
+co número de procesos de cada usuario. 
+ps -eo user | awk '{ procesos[$1]++ } END { for (u in procesos) print u, "tiene", procesos[u], "procesos" }'
+
+4. Amosa os sistema de arquivos de tipo ext4 ou vfat que estean montados (podes 
+procesar a saída do comando mount)
+mount | awk '$5 == "ext4" || $5 == "vfat" { print "Dispositivo:", $1, "en", $3, "(Tipo:", $5 ")" }'
+
+5. Cantos usuarios teñen asociado o shell /usr/sbin/nologin?
+awk -F: '$7 == "/usr/sbin/nologin" { contador++ } END { print "Total de usuarios sin acceso:", contador }' /etc/passwd
+
+6. Calcula o espazo total ocupado polos arquivos nos diferentes sistemas de arquivos 
+montados. Podes dar o resultado en Gbytes? (pista:  df -k)
+df -k | awk 'NR > 1 { suma += $3 } END { print "Total ocupado:", suma / (1024 * 1024), "GB" }'
+
+7. Crea un informe indicando cantos usuarios empregan cada tipo de shell. 
+awk -F: '{ cuentas[$7]++ } END { print "INFORME DE SHELLS:"; print "------------------"; for (s in cuentas) print s, ":", cuentas[s] }' /etc/passwd
+
+8. Obtén un listado da memoria ocupada polos diferentes usuarios do sistema 
+(procesa a saída do comando ps -aux. Empregando a saída formateada con 
+printf intenta conseguir un listado como o seguinte: 
+USUARIO          | MEMORIA (MiB) 
+systemd+         | 28.26 
+anton            | 8369.88 
+message+         | 28.96 
+syslog           | 5.95 
+ps aux | awk 'NR > 1 { memoria[$1] += $6 } END { print "USUARIO          | MEMORIA (MiB)"; print "---------------------------------"; for (u in memoria) printf "%-16s | %.2f\n", u, memoria[u]/1024 }'
+
+9. Para rematar imos facer un script en awk que amose en pantalla o listado de todos 
+os grupos e, para cada un deles, o nome dos usuarios asociados a dito grupo. 
+Deberás descartar do listado todos os grupos que non teñen ningún usuario 
+asociado. 
+awk -F: '$4 != "" { print "Grupo:", $1, "-> Usuarios:", $4 }' /etc/group
+
+10. E se quixésemos amosar so os grupos con mais de n usuarios, sendo n un 
+parámetro pasado ao script? Neste caso podes facer un shell script que conteña o 
+programa awk.
+#!/bin/bash
+
+# Comprobamos si el usuario pasó el parámetro n
+if [ -z "$1" ]; then
+    echo "Uso: $0 <numero_minimo_usuarios>"
+    exit 1
+fi
+
+# Guardamos el parámetro en una variable de Bash
+MINIMO=$1
+
+# Ejecutamos AWK pasando la variable de Bash a una variable de AWK
+awk -v n="$MINIMO" -F: '
+$4 != "" { 
+    cantidad = split($4, lista, ","); 
+    if (cantidad > n) {
+        printf "Grupo: %-15s | Usuarios: %d | Lista: %s\n", $1, cantidad, $4
+    }
+}' /etc/group 
